@@ -33,6 +33,33 @@ jobs:
       - name: Setup Expo CLI
         run: npm install -g @expo/cli eas-cli
 
+      - name: Create placeholder assets if missing
+        run: |
+          # Create assets directory if it doesn't exist
+          mkdir -p assets
+          
+          # Create minimal placeholder PNG files if they don't exist
+          if [ ! -f "assets/icon.png" ]; then
+            # Create a simple 1x1 PNG file
+            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" | base64 -d > assets/icon.png
+            echo "Created placeholder icon.png"
+          fi
+          
+          if [ ! -f "assets/adaptive-icon.png" ]; then
+            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" | base64 -d > assets/adaptive-icon.png
+            echo "Created placeholder adaptive-icon.png"
+          fi
+          
+          if [ ! -f "assets/splash.png" ]; then
+            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" | base64 -d > assets/splash.png
+            echo "Created placeholder splash.png"
+          fi
+          
+          if [ ! -f "assets/favicon.png" ]; then
+            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" | base64 -d > assets/favicon.png
+            echo "Created placeholder favicon.png"
+          fi
+
       - name: Generate Android project for standalone build
         run: npx expo prebuild --platform android --clean
 
