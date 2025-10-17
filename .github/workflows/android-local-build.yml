@@ -1,4 +1,4 @@
-name: Build Production APK
+name: Build Standalone APK
 
 on:
   push:
@@ -10,7 +10,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -24,26 +23,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          npm ci
-          npx expo install --fix
+        run: npm install
 
       - name: Setup Expo CLI
-        run: npm install -g @expo/cli@latest
-
-      - name: Verify project structure
-        run: |
-          echo "Checking project structure..."
-          ls -la
-          echo "Checking source files..."
-          ls -la src/components/
-          ls -la src/services/
-          ls -la src/utils/
-          echo "Checking templates..."
-          ls -la src/assets/templates/ | head -10
+        run: npm install -g @expo/cli
 
       - name: Create proper assets if missing
         run: |
@@ -81,44 +66,12 @@ jobs:
           echo "Verifying assets..."
           ls -la assets/
 
-      - name: Clear Expo cache
-        run: npx expo start --clear --non-interactive || true
+      - name: Generate Android project for standalone build
+        run: npx expo prebuild --platform android --clean
 
-      - name: Generate Android project
-        run: |
-          echo "Generating Android project for production..."
-          npx expo prebuild --platform android --clean --non-interactive
-          
-          echo "Verifying Android project..."
-          ls -la android/
-          ls -la android/app/src/main/
-
-      - name: Configure Gradle for production
+      - name: Update Gradle wrapper to required version
         run: |
           cd android
-          
-          # Make gradlew executable
-          chmod +x gradlew
-          
-          # Add production-safe Gradle properties
-          cat >> gradle.properties << 'EOF'
-          
-          # Production build optimizations
-          org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=512m
-          org.gradle.parallel=true
-          org.gradle.configureondemand=true
-          org.gradle.daemon=true
-          
-          # Android settings
-          android.useAndroidX=true
-          android.enableJetifier=true
-          android.enableR8.fullMode=false
-          
-          # Disable unnecessary features for stability
-          org.gradle.unsafe.configuration-cache=false
-          EOF
-          
-          # Update Gradle wrapper
           echo "distributionBase=GRADLE_USER_HOME" > gradle/wrapper/gradle-wrapper.properties
           echo "distributionPath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
           echo "distributionUrl=https\\://services.gradle.org/distributions/gradle-8.10.2-all.zip" >> gradle/wrapper/gradle-wrapper.properties
@@ -127,43 +80,41 @@ jobs:
           echo "zipStoreBase=GRADLE_USER_HOME" >> gradle/wrapper/gradle-wrapper.properties
           echo "zipStorePath=wrapper/dists" >> gradle/wrapper/gradle-wrapper.properties
 
-      - name: Build production APK
+      - name: Make gradlew executable
+        run: chmod +x ./android/gradlew
+
+      - name: Clean Gradle cache
         run: |
-          cd android
-          
-          echo "Cleaning project..."
-          ./gradlew clean --info
-          
-          echo "Building release APK..."
-          ./gradlew assembleRelease --stacktrace --info --no-daemon
-          
-          echo "Verifying APK was created..."
-          ls -la app/build/outputs/apk/release/
-          
-          # Check APK size (should be reasonable)
-          APK_SIZE=$(stat -f%z app/build/outputs/apk/release/app-release.apk 2>/dev/null || stat -c%s app/build/outputs/apk/release/app-release.apk)
-          echo "APK size: $APK_SIZE bytes"
-          
-          if [ $APK_SIZE -lt 1000000 ]; then
-            echo "⚠️ APK seems too small, might be missing assets"
-          else
-            echo "✅ APK size looks good"
-          fi
+          echo "Cleaning Gradle cache..."
+          ./gradlew clean --refresh-dependencies
+        working-directory: android
 
-      - name: Upload production APK
+      - name: Build standalone release APK
+        run: |
+          echo "Building standalone release APK..."
+          # Add retry logic for handling temporary network issues
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Build attempt $attempt of $max_attempts"
+            if ./gradlew assembleRelease --stacktrace; then
+              echo "Build successful!"
+              break
+            else
+              echo "Build failed on attempt $attempt"
+              if [ $attempt -eq $max_attempts ]; then
+                echo "All build attempts failed"
+                exit 1
+              fi
+              echo "Waiting 30 seconds before retry..."
+              sleep 30
+              attempt=$((attempt + 1))
+            fi
+          done
+        working-directory: android
+
+      - name: Upload standalone APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: coloring-book-production-apk
-          path: android/app/build/outputs/apk/release/app-release.apk
-          retention-days: 30
-
-      - name: Upload build logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-logs-failure
-          path: |
-            android/app/build/outputs/logs/
-            android/build/outputs/logs/
-            android/gradle.log
-          retention-days: 7
+          name: coloring-app-standalone-apk
+          path: android/app/build/outputs/apk/release/*.apk
