@@ -3,39 +3,45 @@
     "name": "ColorSplash Kids",
     "slug": "coloring-book-app",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#EEF2FF"
+      "backgroundColor": "#2E3C4B"
     },
     "assetBundlePatterns": [
-      "**/*",
-      "src/assets/templates/*.png"
+      "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourcompany.coloringbook",
+      "bundleIdentifier": "com.enigmacoder.coloringbook",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to save colored images.",
         "NSPhotoLibraryAddUsageDescription": "This app needs permission to save colored images to your photo library.",
-        "UISupportsDocumentBrowser": true
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#EEF2FF"
+        "backgroundColor": "#2E3C4B"
       },
-      "package": "com.yourcompany.coloringbook",
+      "package": "com.enigmacoder.coloringbook",
+      "versionCode": 1,
+      "compileSdkVersion": 33,
+      "targetSdkVersion": 33,
+      "buildToolsVersion": "33.0.2",
       "permissions": [
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "READ_MEDIA_IMAGES",
-        "CAMERA"
-      ]
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "jsEngine": "hermes",
+      "enableProguardInReleaseBuilds": false,
+      "enableSeparateBuildPerCPUArchitecture": false,
+      "kotlinVersion": "1.9.24"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -43,18 +49,30 @@
     },
     "plugins": [
       [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#2E3C4B",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 150
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/Inter.ttf"]
+        }
+      ],
+      [
         "expo-media-library",
         {
           "photosPermission": "Allow ColorSplash Kids to save your colored images.",
-          "savePhotosPermission": "Allow ColorSplash Kids to save colored images to your photo library.",
-          "isAccessMediaLocationEnabled": true
+          "savePhotosPermission": "Allow ColorSplash Kids to save colored images to your photo library."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow ColorSplash Kids to access your photos to convert them to coloring templates.",
-          "cameraPermission": "Allow ColorSplash Kids to take photos to convert them to coloring templates."
+          "photosPermission": "Allow ColorSplash Kids to access your photos to convert them to coloring templates."
         }
       ]
     ]
