@@ -46,35 +46,6 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
-    },
-    "plugins": [
-      [
-        "expo-splash-screen",
-        {
-          "backgroundColor": "#2E3C4B",
-          "image": "./assets/splash-icon.png",
-          "imageWidth": 150
-        }
-      ],
-      [
-        "expo-font",
-        {
-          "fonts": ["./assets/fonts/Inter.ttf"]
-        }
-      ],
-      [
-        "expo-media-library",
-        {
-          "photosPermission": "Allow ColorSplash Kids to save your colored images.",
-          "savePhotosPermission": "Allow ColorSplash Kids to save colored images to your photo library."
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Allow ColorSplash Kids to access your photos to convert them to coloring templates."
-        }
-      ]
-    ]
+    }
   }
 }

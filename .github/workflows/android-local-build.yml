@@ -37,12 +37,20 @@ jobs:
           # Create a proper 1024x1024 PNG for production
           # This is a minimal but valid PNG that won't cause crashes
           cat > create_icon.py << 'EOF'
-          from PIL import Image
+          from PIL import Image, ImageDraw
           import os
           
           # Create a simple colored square icon
           def create_icon(filename, size, color):
               img = Image.new('RGBA', (size, size), color)
+              # Add a simple design to make it recognizable
+              draw = ImageDraw.Draw(img)
+              # Draw a simple brush/palette icon
+              center = size // 2
+              brush_size = size // 4
+              draw.ellipse([center - brush_size, center - brush_size, 
+                           center + brush_size, center + brush_size], 
+                          fill=(255, 255, 255, 200))
               img.save(filename, 'PNG')
               print(f"Created {filename} ({size}x{size})")
           
@@ -54,7 +62,7 @@ jobs:
               create_icon('assets/adaptive-icon.png', 1024, (99, 102, 241, 255))
           
           if not os.path.exists('assets/splash.png'):
-              create_icon('assets/splash.png', 1284, (238, 242, 255, 255))  # Light purple
+              create_icon('assets/splash.png', 1284, (46, 60, 75, 255))  # Dark blue-gray
           
           if not os.path.exists('assets/favicon.png'):
               create_icon('assets/favicon.png', 48, (99, 102, 241, 255))
